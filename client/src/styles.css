@@ -96,7 +96,7 @@ select {
 }
 
 .nav-btn.active {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: rgba(91, 159, 212, 0.22);
   border-color: var(--accent);
 }
 
@@ -107,7 +107,8 @@ select {
   gap: 1rem 1.5rem;
   padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 88%, var(--bg));
+  /* was color-mix(surface 88%, bg); html2canvas cannot parse color-mix */
+  background: #161d2b;
 }
 
 .toolbar-group {
@@ -182,14 +183,14 @@ select {
 .edge-normal {
   stroke: var(--dim);
   opacity: 0.92;
-  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.65));
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.65));
 }
 
 .edge-path {
   stroke: var(--path);
   opacity: 1;
   stroke-width: 2.75;
-  filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.85));
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.85));
 }
 
 .edge-dim {
@@ -203,11 +204,11 @@ select {
 }
 
 .edge-arrow-normal {
-  fill: color-mix(in srgb, var(--dim) 92%, transparent);
+  fill: rgba(74, 90, 109, 0.92);
 }
 
 .edge-arrow-dim {
-  fill: color-mix(in srgb, var(--dim) 40%, transparent);
+  fill: rgba(74, 90, 109, 0.4);
 }
 
 .edge-arrow-path {
@@ -240,7 +241,7 @@ select {
   letter-spacing: 0.04em;
   color: var(--muted);
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 70%, black);
+  background: #121923;
 }
 
 .board-cards {
@@ -275,7 +276,7 @@ select {
 
 .board-card.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 1px rgba(91, 159, 212, 0.55);
 }
 
 .board-card.on-path {
@@ -325,7 +326,7 @@ select {
 }
 
 .btn.danger {
-  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+  border-color: #9b474c;
   color: #ffb4b0;
 }
 
@@ -335,8 +336,8 @@ select {
 }
 
 .banner-error {
-  background: color-mix(in srgb, var(--danger) 18%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  background: rgba(248, 81, 73, 0.18);
+  border: 1px solid rgba(248, 81, 73, 0.45);
   padding: 1rem 1.25rem;
   border-radius: var(--radius);
   margin: 1rem 1.5rem;
@@ -365,7 +366,7 @@ select {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgb(0 0 0 / 0.55);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
