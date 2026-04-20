@@ -30,11 +30,24 @@ function sortCats(cats: Category[]): Category[] {
   return [...cats].sort((a, b) => a.order - b.order);
 }
 
-type Line = {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+/** Smooth curve from upstream (exit right) → downstream (enter left), flat tangents at ports. */
+function cubicDependencyPath(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number
+): string {
+  const dx = x1 - x0;
+  const alpha = Math.min(160, Math.max(28, Math.abs(dx) * 0.35));
+  const cx0 = x0 + alpha;
+  const cy0 = y0;
+  const cx1 = x1 - alpha;
+  const cy1 = y1;
+  return `M ${x0} ${y0} C ${cx0} ${cy0} ${cx1} ${cy1} ${x1} ${y1}`;
+}
+
+type EdgeSeg = {
+  d: string;
   onPath: boolean;
   key: string;
 };
@@ -52,7 +65,7 @@ export function Board({
 }: Props) {
   const boardRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [lines, setLines] = useState<Line[]>([]);
+  const [edges, setEdges] = useState<EdgeSeg[]>([]);
 
   const pathIds = useMemo(
     () =>
@@ -87,27 +100,28 @@ export function Board({
     const root = boardRef.current;
     if (!root) return;
     const rb = root.getBoundingClientRect();
-    const next: Line[] = [];
-    const showHighlight = Boolean(selectedId);
+    const next: EdgeSeg[] = [];
 
     for (const d of dependencies) {
-      const a = cardRefs.current.get(d.fromProductId);
-      const b = cardRefs.current.get(d.toProductId);
-      if (!a || !b) continue;
+      const fromEl = cardRefs.current.get(d.fromProductId);
+      const toEl = cardRefs.current.get(d.toProductId);
+      if (!fromEl || !toEl) continue;
       if (hideOffPath && selectedId) {
         if (!pathIds.has(d.fromProductId) || !pathIds.has(d.toProductId))
           continue;
       }
-      const ab = a.getBoundingClientRect();
-      const bb = b.getBoundingClientRect();
-      const x1 = ab.left + ab.width / 2 - rb.left;
-      const y1 = ab.top + ab.height / 2 - rb.top;
-      const x2 = bb.left + bb.width / 2 - rb.left;
-      const y2 = bb.top + bb.height / 2 - rb.top;
+      const ab = fromEl.getBoundingClientRect();
+      const bb = toEl.getBoundingClientRect();
+      /* Exit from right edge of supplier, enter left edge of dependent */
+      const x0 = ab.right - rb.left;
+      const y0 = ab.top + ab.height / 2 - rb.top;
+      const x1 = bb.left - rb.left;
+      const y1 = bb.top + bb.height / 2 - rb.top;
+      const dPath = cubicDependencyPath(x0, y0, x1, y1);
       const onPath = pathEdgeKeys.has(`${d.fromProductId}|${d.toProductId}`);
-      next.push({ x1, y1, x2, y2, onPath, key: d.id });
+      next.push({ d: dPath, onPath, key: d.id });
     }
-    setLines(next);
+    setEdges(next);
   }, [
     dependencies,
     hideOffPath,
@@ -136,24 +150,6 @@ export function Board({
       className={`board-wrap ${exportMode ? "board-export" : ""}`}
       data-export-root={exportMode ? "true" : undefined}
     >
-      <svg className="board-edges" aria-hidden>
-        {lines.map((ln) => (
-          <line
-            key={ln.key}
-            x1={ln.x1}
-            y1={ln.y1}
-            x2={ln.x2}
-            y2={ln.y2}
-            className={
-              !showHighlight
-                ? "edge edge-normal"
-                : ln.onPath
-                  ? "edge edge-path"
-                  : "edge edge-dim"
-            }
-          />
-        ))}
-      </svg>
       <div className="board-columns">
         {ordered.map((cat) => (
           <section key={cat.id} className="board-column">
@@ -188,6 +184,75 @@ export function Board({
           </section>
         ))}
       </div>
+      {/* Painted after columns so connectors stay visible on top of cards */}
+      <svg className="board-edges" aria-hidden>
+        <defs>
+          <marker
+            id="edge-arrow-normal"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto"
+          >
+            <path
+              d="M 0 0 L 10 5 L 0 10 z"
+              className="edge-arrow-fill edge-arrow-normal"
+            />
+          </marker>
+          <marker
+            id="edge-arrow-dim"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto"
+          >
+            <path
+              d="M 0 0 L 10 5 L 0 10 z"
+              className="edge-arrow-fill edge-arrow-dim"
+            />
+          </marker>
+          <marker
+            id="edge-arrow-path"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto"
+          >
+            <path
+              d="M 0 0 L 10 5 L 0 10 z"
+              className="edge-arrow-fill edge-arrow-path"
+            />
+          </marker>
+        </defs>
+        {edges.map((seg) => {
+          const cls = !showHighlight
+            ? "edge edge-normal"
+            : seg.onPath
+              ? "edge edge-path"
+              : "edge edge-dim";
+          const marker =
+            !showHighlight
+              ? "url(#edge-arrow-normal)"
+              : seg.onPath
+                ? "url(#edge-arrow-path)"
+                : "url(#edge-arrow-dim)";
+          return (
+            <path
+              key={seg.key}
+              d={seg.d}
+              fill="none"
+              className={cls}
+              markerEnd={marker}
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }

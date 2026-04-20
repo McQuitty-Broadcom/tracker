@@ -156,6 +156,7 @@ select {
 
 .board-wrap {
   position: relative;
+  isolation: isolate;
   min-width: min-content;
   min-height: 280px;
 }
@@ -167,26 +168,50 @@ select {
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  z-index: 3;
 }
 
 .edge {
-  stroke-width: 2;
+  stroke-width: 2.25;
   stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  vector-effect: non-scaling-stroke;
 }
 
 .edge-normal {
   stroke: var(--dim);
-  opacity: 0.85;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.65));
 }
 
 .edge-path {
   stroke: var(--path);
   opacity: 1;
+  stroke-width: 2.75;
+  filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.85));
 }
 
 .edge-dim {
   stroke: var(--dim);
-  opacity: 0.25;
+  opacity: 0.35;
+  stroke-width: 2;
+}
+
+.edge-arrow-fill {
+  stroke: none;
+}
+
+.edge-arrow-normal {
+  fill: color-mix(in srgb, var(--dim) 92%, transparent);
+}
+
+.edge-arrow-dim {
+  fill: color-mix(in srgb, var(--dim) 40%, transparent);
+}
+
+.edge-arrow-path {
+  fill: var(--path);
 }
 
 .board-columns {
