@@ -1,0 +1,10 @@
+{
+  "name": "dependency-board",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build -w server && npm run build -w client",
+    "start": "npm run start -w server"
+  }
+}
